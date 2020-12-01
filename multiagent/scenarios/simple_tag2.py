@@ -1,7 +1,7 @@
 import numpy as np
 from multiagent.core import World, Agent, Landmark
 from multiagent.scenario import BaseScenario
-
+# Xiaobai: same as simple_tag, but done=True at collision
 
 class Scenario(BaseScenario):
     def make_world(self):
