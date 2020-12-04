@@ -9,8 +9,8 @@ class Scenario(BaseScenario):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_agents = 2
-        num_landmarks = 2
+        num_agents = 3
+        num_landmarks = 3
         world.collaborative = False
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
@@ -18,7 +18,7 @@ class Scenario(BaseScenario):
             agent.name = 'agent %d' % i
             agent.collide = False
             agent.silent = True
-            agent.size = 0.15
+            agent.size = 0.3
         # add landmarks
         world.landmarks = [Landmark() for i in range(num_landmarks)]
         for i, landmark in enumerate(world.landmarks):
@@ -79,8 +79,8 @@ class Scenario(BaseScenario):
             dists.append(dist)
         if max(dists) < agent.size:
             rew += 1.
-
-        rew -= 0.05*(np.abs(agent.action.u[0])+np.abs(agent.action.u[1]))
+            
+        rew -= 0.01*(np.abs(agent.action.u[0])+np.abs(agent.action.u[1]))
 
         # if agent.collide:
         #     for a in world.agents:
