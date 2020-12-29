@@ -5,14 +5,29 @@ from multiagent.scenario import BaseScenario
 
 class Scenario(BaseScenario):
 
-    def make_world(self):
+    def make_world(self, args):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_agents = 3
+        if ('num_agents' in args.keys()) and args['num_agents']:
+            num_good_agents = args['num_agents']
+        else:
+            num_good_agents = 2
+        if ('num_adversaries' in args.keys()) and args['num_adversaries']:
+            num_adversaries = args['num_adversaries']
+        else:
+            num_adversaries = 1
+        num_agents = num_adversaries + num_good_agents
         world.num_agents = num_agents
-        num_adversaries = 1
-        num_landmarks = num_agents - 1
+        if ('num_landmarks' in args.keys()) and args['num_landmarks']:
+            num_landmarks = args['num_landmarks']
+        else:
+            num_landmarks = 2
+
+        # num_agents = 3
+        # world.num_agents = num_agents
+        # num_adversaries = 1
+        # num_landmarks = num_agents - 1
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
@@ -34,9 +49,8 @@ class Scenario(BaseScenario):
 
     def reset_world(self, world):
         # random properties for agents
-        world.agents[0].color = np.array([0.85, 0.35, 0.35])
-        for i in range(1, world.num_agents):
-            world.agents[i].color = np.array([0.35, 0.35, 0.85])
+        for i, agent in enumerate(world.agents):
+            agent.color = np.array([0.35, 0.85, 0.35]) if not agent.adversary else np.array([0.85, 0.35, 0.35])
         # random properties for landmarks
         for i, landmark in enumerate(world.landmarks):
             landmark.color = np.array([0.15, 0.15, 0.15])
@@ -109,13 +123,15 @@ class Scenario(BaseScenario):
     def adversary_reward(self, agent, world):
         # Rewarded based on proximity to the goal landmark
         shaped_reward = True
-        if shaped_reward:  # distance-based reward
-            return -np.sum(np.square(agent.state.p_pos - agent.goal_a.state.p_pos))
-        else:  # proximity-based reward (binary)
+        adversary_agents = self.adversaries(world)
+        if shaped_reward:  # distance-based adversary reward
+            adv_rew = -sum([np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in adversary_agents])
+        else:  # proximity-based adversary reward (binary)
             adv_rew = 0
-            if np.sqrt(np.sum(np.square(agent.state.p_pos - agent.goal_a.state.p_pos))) < 2 * agent.goal_a.size:
-                adv_rew += 5
-            return adv_rew
+            for a in adversary_agents:
+                if np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) < 2 * a.goal_a.size:
+                    adv_rew += 5
+        return adv_rew
 
 
     def observation(self, agent, world):

@@ -3,13 +3,27 @@ from multiagent.core import World, Agent, Landmark
 from multiagent.scenario import BaseScenario
 
 class Scenario(BaseScenario):
-    def make_world(self):
+    def make_world(self, args):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_agents = 2
-        num_adversaries = 1
-        num_landmarks = 2
+        if ('num_agents' in args.keys()) and args['num_agents']:
+            num_good_agents = args['num_agents']
+        else:
+            num_good_agents = 1
+        if ('num_adversaries' in args.keys()) and args['num_adversaries']:
+            num_adversaries = args['num_adversaries']
+        else:
+            num_adversaries = 1
+        num_agents = num_adversaries + num_good_agents
+        world.num_agents = num_agents
+        if ('num_landmarks' in args.keys()) and args['num_landmarks']:
+            num_landmarks = args['num_landmarks']
+        else:
+            num_landmarks = 2
+        # num_agents = 2
+        # num_adversaries = 1
+        # num_landmarks = 2
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
@@ -61,7 +75,7 @@ class Scenario(BaseScenario):
 
     def agent_reward(self, agent, world):
         # the distance to the goal
-        return -np.sqrt(np.sum(np.square(agent.state.p_pos - agent.goal_a.state.p_pos)))
+        return -np.min([np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in world.agents if not a.adversary])
 
     def adversary_reward(self, agent, world):
         # keep the nearest good agents away from the goal
@@ -69,7 +83,8 @@ class Scenario(BaseScenario):
         pos_rew = min(agent_dist)
         #nearest_agent = world.good_agents[np.argmin(agent_dist)]
         #neg_rew = np.sqrt(np.sum(np.square(nearest_agent.state.p_pos - agent.state.p_pos)))
-        neg_rew = np.sqrt(np.sum(np.square(agent.goal_a.state.p_pos - agent.state.p_pos)))
+        adv_dist = [np.sqrt(np.sum(np.square(a.goal_a.state.p_pos - a.state.p_pos))) for a in world.agents if a.adversary]
+        neg_rew = min(adv_dist)
         #neg_rew = sum([np.sqrt(np.sum(np.square(a.state.p_pos - agent.state.p_pos))) for a in world.good_agents])
         return pos_rew - neg_rew
                

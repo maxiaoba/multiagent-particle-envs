@@ -4,14 +4,23 @@ from multiagent.scenario import BaseScenario
 
 
 class Scenario(BaseScenario):
-    def make_world(self):
+    def make_world(self, args):
         world = World()
         # set any world properties first
         world.dim_c = 2
-        num_good_agents = 1
-        num_adversaries = 3
+        if ('num_agents' in args.keys()) and args['num_agents']:
+            num_good_agents = args['num_agents']
+        else:
+            num_good_agents = 1
+        if ('num_adversaries' in args.keys()) and args['num_adversaries']:
+            num_adversaries = args['num_adversaries']
+        else:
+            num_adversaries = 3
         num_agents = num_adversaries + num_good_agents
-        num_landmarks = 2
+        if ('num_landmarks' in args.keys()) and args['num_landmarks']:
+            num_landmarks = args['num_landmarks']
+        else:
+            num_landmarks = 2
         # add agents
         world.agents = [Agent() for i in range(num_agents)]
         for i, agent in enumerate(world.agents):
@@ -90,14 +99,16 @@ class Scenario(BaseScenario):
         # Agents are negatively rewarded if caught by adversaries
         rew = 0
         shape = False
+        agents = self.good_agents(world)
         adversaries = self.adversaries(world)
-        if shape:  # reward can optionally be shaped (increased reward for increased distance from adversary)
-            for adv in adversaries:
-                rew += 0.1 * np.sqrt(np.sum(np.square(agent.state.p_pos - adv.state.p_pos)))
-        if agent.collide:
-            for a in adversaries:
-                if self.is_collision(a, agent):
-                    rew -= 10
+        for ag in agents:
+            if shape:  # reward can optionally be shaped (increased reward for increased distance from adversary)
+                for adv in adversaries:
+                    rew += 0.1 * np.sqrt(np.sum(np.square(ag.state.p_pos - adv.state.p_pos)))
+            if ag.collide:
+                for adv in adversaries:
+                    if self.is_collision(adv, ag):
+                        rew -= 10
 
         # agents are penalized for exiting the screen, so that they can be caught by the adversaries
         def bound(x):
