@@ -86,7 +86,7 @@ class Scenario(BaseScenario):
         adv_dist = [np.sqrt(np.sum(np.square(a.goal_a.state.p_pos - a.state.p_pos))) for a in world.agents if a.adversary]
         neg_rew = min(adv_dist)
         #neg_rew = sum([np.sqrt(np.sum(np.square(a.state.p_pos - agent.state.p_pos))) for a in world.good_agents])
-        return pos_rew - neg_rew
+        return (pos_rew - neg_rew)
                
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame

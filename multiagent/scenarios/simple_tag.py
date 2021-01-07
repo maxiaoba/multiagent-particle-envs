@@ -109,7 +109,7 @@ class Scenario(BaseScenario):
                 for adv in adversaries:
                     if self.is_collision(adv, ag):
                         rew -= 10
-
+        rew = rew/len(world.agents)
         # agents are penalized for exiting the screen, so that they can be caught by the adversaries
         def bound(x):
             if x < 0.9:
@@ -132,11 +132,13 @@ class Scenario(BaseScenario):
         if shape:  # reward can optionally be shaped (decreased reward for increased distance from agents)
             for adv in adversaries:
                 rew -= 0.1 * min([np.sqrt(np.sum(np.square(a.state.p_pos - adv.state.p_pos))) for a in agents])
-        if agent.collide:
-            for ag in agents:
-                for adv in adversaries:
-                    if self.is_collision(ag, adv):
-                        rew += 10
+            rew = rew/len(adversaries)
+
+        for ag in agents:
+            for adv in adversaries:
+                if self.is_collision(ag, adv):
+                    rew += 10/len(world.agents)
+
         return rew
 
     def observation(self, agent, world):

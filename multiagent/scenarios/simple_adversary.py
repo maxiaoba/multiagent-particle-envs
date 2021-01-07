@@ -99,12 +99,13 @@ class Scenario(BaseScenario):
         # Calculate negative reward for adversary
         adversary_agents = self.adversaries(world)
         if shaped_adv_reward:  # distance-based adversary reward
-            adv_rew = sum([np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in adversary_agents])
+            adv_rew = mean([np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in adversary_agents])
         else:  # proximity-based adversary reward (binary)
             adv_rew = 0
             for a in adversary_agents:
                 if np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) < 2 * a.goal_a.size:
                     adv_rew -= 5
+            # don't need mean since a.goal_a.size is limited
 
         # Calculate positive reward for agents
         good_agents = self.good_agents(world)
@@ -125,12 +126,13 @@ class Scenario(BaseScenario):
         shaped_reward = True
         adversary_agents = self.adversaries(world)
         if shaped_reward:  # distance-based adversary reward
-            adv_rew = -sum([np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in adversary_agents])
+            adv_rew = -mean([np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) for a in adversary_agents])
         else:  # proximity-based adversary reward (binary)
             adv_rew = 0
             for a in adversary_agents:
                 if np.sqrt(np.sum(np.square(a.state.p_pos - a.goal_a.state.p_pos))) < 2 * a.goal_a.size:
                     adv_rew += 5
+            # don't need mean since a.goal_a.size is limited
         return adv_rew
 
 
