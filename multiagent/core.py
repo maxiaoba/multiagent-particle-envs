@@ -80,7 +80,7 @@ class Agent(Entity):
 
 # multi-agent world
 class World(object):
-    def __init__(self):
+    def __init__(self, boundary=None):
         # list of agents and entities (can change at execution-time!)
         self.agents = []
         self.landmarks = []
@@ -97,6 +97,12 @@ class World(object):
         # contact response parameters
         self.contact_force = 1e+2
         self.contact_margin = 1e-3
+        # boundary parameters
+        if boundary: #[[low,low],[high,high]]
+            assert len(boundary) == 2
+            assert len(boundary[0]) == self.dim_p
+            assert len(boundary[1]) == self.dim_p
+        self.boundary = boundary
 
     # return all entities in the world
     @property
@@ -167,6 +173,13 @@ class World(object):
                     entity.state.p_vel = entity.state.p_vel / np.sqrt(np.square(entity.state.p_vel[0]) +
                                                                   np.square(entity.state.p_vel[1])) * entity.max_speed
             entity.state.p_pos += entity.state.p_vel * self.dt
+
+            if self.boundary:
+                old_pos = entity.state.p_pos
+                entity.state.p_pos = np.clip(entity.state.p_pos,self.boundary[0],self.boundary[1])
+                for i in range(self.dim_p):
+                    if old_pos[i] != entity.state.p_pos[i]:
+                        entity.state.p_vel[i] = 0.
 
     def update_agent_state(self, agent):
         # set communication state (directly for now)

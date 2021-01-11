@@ -4,7 +4,10 @@ from multiagent.scenario import BaseScenario
 
 class Scenario(BaseScenario):
     def make_world(self, args):
-        world = World()
+        if ('boundary' in args.keys()) and args['boundary']:
+            world = World(boundary=args['boundary'])
+        else:
+            world = World()
         # set any world properties first
         world.dim_c = 2
         if ('num_agents' in args.keys()) and args['num_agents']:
